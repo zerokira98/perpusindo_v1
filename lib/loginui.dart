@@ -10,11 +10,15 @@ class LoginForm extends StatefulWidget {
   _LoginFormState createState() => _LoginFormState();
 }
 
-class _LoginFormState extends State<LoginForm> {
+class _LoginFormState extends State<LoginForm>
+    with SingleTickerProviderStateMixin {
+  Animation myanimation;
+  AnimationController anicont;
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
   FocusNode fsEmail = FocusNode();
   FocusNode fsPassword = FocusNode();
+  bool securetext = true;
   bool check = false;
   AccelerometerEvent event;
   StreamSubscription accel;
@@ -22,11 +26,16 @@ class _LoginFormState extends State<LoginForm> {
   Timer timer;
   double loading = 0;
   bool tapped = false;
+  bool ready = false;
   Alignment ali = Alignment(-0.1, 0);
   // Alignment alib = Alignment(0, 0);
   @override
   void initState() {
     // TODO: implement initState
+
+    anicont =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 750));
+    myanimation = Tween(begin: 0.0, end: 1.0).animate(anicont);
     accel = accelerometerEvents.listen((AccelerometerEvent even) {
       setState(() {
         event = even;
@@ -42,6 +51,7 @@ class _LoginFormState extends State<LoginForm> {
   @override
   void dispose() {
     // TODO: implement dispose
+    anicont.dispose();
     accel.cancel();
     timer.cancel();
     super.dispose();
@@ -75,7 +85,7 @@ class _LoginFormState extends State<LoginForm> {
               ),
             ),
             Positioned(
-              top: 8,
+              top: 2,
               left: 18,
               child: SafeArea(
                 child: Text(
@@ -88,7 +98,7 @@ class _LoginFormState extends State<LoginForm> {
               ),
             ),
             Positioned(
-                top: 18,
+                top: 10,
                 left: 18,
                 child: SafeArea(
                   child: Text(
@@ -97,8 +107,8 @@ class _LoginFormState extends State<LoginForm> {
                   ),
                 )),
             AnimatedPositioned(
-                duration: Duration(milliseconds: 300),
-                bottom: 14,
+                duration: Duration(milliseconds: 245),
+                bottom: 16,
                 right: 14 + loading, //14
                 child: Image.asset(
                   'images/pilogo.png',
@@ -106,177 +116,233 @@ class _LoginFormState extends State<LoginForm> {
                   color: Colors.white,
                 )),
             AnimatedPositioned(
-                duration: Duration(milliseconds: 300),
-                bottom: 14,
-                right: 14 - 52 + loading,
-                child: CircularProgressIndicator()),
+              duration: Duration(milliseconds: 300),
+              bottom: 16,
+              right: 14 - 70 + loading,
+              child: Container(
+                height: 45,
+                padding:
+                    EdgeInsets.only(top: 6, bottom: 6, left: 12, right: 16),
+                color: Colors.white,
+                child: AnimatedSwitcher(
+                  duration: Duration(milliseconds: 200),
+                  child: !ready
+                      ? CircularProgressIndicator()
+                      : AnimatedIcon(
+                          icon: AnimatedIcons.pause_play,
+                          color: Colors.green,
+                          size: 28,
+                          progress: myanimation),
+                ),
+              ),
+            ),
           ],
         ),
       );
     }
 
+    List<Widget> bottomStatic() {
+      return [
+        Container(),
+        Container(),
+        Container(
+          padding: EdgeInsets.only(top: 8, left: 18, right: 18),
+          child: Column(
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: TextFormField(
+                      controller: email,
+                      focusNode: fsEmail,
+                      textInputAction: TextInputAction.next,
+                      // onSubmitted: ,
+                      onFieldSubmitted: (val) {
+                        fsEmail.unfocus();
+                        FocusScope.of(context).requestFocus(fsPassword);
+                      },
+                      decoration: InputDecoration(labelText: 'Username/Email'),
+
+                      // decoration:,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: TextFormField(
+                      controller: password,
+                      focusNode: fsPassword,
+                      obscureText: securetext,
+                      decoration: InputDecoration(
+                          labelText: 'Password',
+                          suffixIcon: InkWell(
+                            onTap: () {
+                              setState(() {
+                                securetext = !securetext;
+                              });
+                            },
+                            child: Icon(securetext
+                                ? Icons.visibility_off
+                                : Icons.visibility),
+                          )),
+                    ),
+                  ),
+                ],
+              ),
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    check = !check;
+                  });
+                },
+                child: Row(
+                  children: <Widget>[
+                    Checkbox(
+                        // checkColor: ,
+                        value: check,
+                        onChanged: (val) {
+                          setState(() {
+                            check = val;
+                          });
+                        }),
+                    Text('Tetap login di perangkat ini'),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 8,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Expanded(
+                    flex: 3,
+                    child: MaterialButton(
+                      onPressed: () {
+                        setState(() {
+                          tapped = !tapped;
+                          if (tapped) {
+                            loading = 50;
+                            Future.delayed(Duration(seconds: 5), () {
+                              setState(() {
+                                ready = !ready;
+                                anicont.forward();
+                              });
+                            });
+                          } else {
+                            loading = 0;
+                            setState(() {
+                              ready = !ready;
+                              anicont.reverse();
+                            });
+                          }
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 2.0, right: 2),
+                        child: Text(' Masuk '),
+                      ),
+                      textColor: Colors.white,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                  Expanded(flex: 2, child: Center(child: Text('atau'))),
+                  Expanded(
+                    flex: 3,
+                    child: InkWell(
+                      onTap: () {},
+                      child: Text(
+                        'Daftar menggunakan email',
+                        textAlign: TextAlign.end,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 8,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text('Atau gunakan SNS'),
+                  Row(
+                    children: <Widget>[
+                      InkWell(
+                        onTap: () {},
+                        child: Container(
+                          child: Icon(Icons.g_translate),
+                          margin: EdgeInsets.only(left: 4),
+                          padding: EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                              border: Border.all(),
+                              borderRadius: BorderRadius.circular(4)),
+                        ),
+                      ),
+                      Container(
+                        child: Icon(Icons.g_translate),
+                        margin: EdgeInsets.only(left: 4),
+                        padding: EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                            border: Border.all(),
+                            borderRadius: BorderRadius.circular(4)),
+                      ),
+                      Container(
+                        child: Icon(Icons.g_translate),
+                        margin: EdgeInsets.only(left: 4),
+                        padding: EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                            border: Border.all(),
+                            borderRadius: BorderRadius.circular(4)),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+              SizedBox(
+                height: 18,
+              ),
+            ],
+          ),
+        ),
+        // Spacer(),
+        Container(
+          padding: EdgeInsets.all(12),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.grey[100],
+          child: InkWell(
+            onTap: () {},
+            child: Text(
+              'Ada masalah login?',
+              style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.w500),
+            ),
+          ),
+          width: double.maxFinite,
+        )
+      ];
+    }
+
     Widget bottom(int orients) {
       int orient = orients;
+
+      Widget statis = Container();
+
       if (orient == 0) {
         return Container(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              Container(
-                padding: EdgeInsets.only(top: 8, left: 18, right: 18),
-                child: Column(
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: TextFormField(
-                            controller: email,
-                            focusNode: fsEmail,
-                            textInputAction: TextInputAction.next,
-                            // onSubmitted: ,
-                            onFieldSubmitted: (val) {
-                              fsEmail.unfocus();
-                              FocusScope.of(context).requestFocus(fsPassword);
-                            },
-                            decoration:
-                                InputDecoration(labelText: 'Username/Email'),
-
-                            // decoration:,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: TextFormField(
-                            controller: password,
-                            focusNode: fsPassword,
-                            obscureText: true,
-                            decoration: InputDecoration(labelText: 'Password'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          check = !check;
-                        });
-                      },
-                      child: Row(
-                        children: <Widget>[
-                          Checkbox(
-                              // checkColor: ,
-                              value: check,
-                              onChanged: (val) {
-                                setState(() {
-                                  check = val;
-                                });
-                              }),
-                          Text('Tetap login di perangkat ini'),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        MaterialButton(
-                          onPressed: () {
-                            setState(() {
-                              tapped = !tapped;
-                              if (tapped) {
-                                loading = 50;
-                              } else {
-                                loading = 0;
-                              }
-                            });
-                          },
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.only(left: 14.0, right: 14),
-                            child: Text(' Masuk '),
-                          ),
-                          textColor: Colors.white,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                        Text('atau'),
-                        InkWell(
-                          onTap: () {},
-                          child: Text(
-                            'Daftar menggunakan email',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text('Atau gunakan SNS'),
-                        Row(
-                          children: <Widget>[
-                            Container(
-                              child: Icon(Icons.g_translate),
-                              margin: EdgeInsets.only(left: 4),
-                              padding: EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                  border: Border.all(),
-                                  borderRadius: BorderRadius.circular(4)),
-                            ),
-                            Container(
-                              child: Icon(Icons.g_translate),
-                              margin: EdgeInsets.only(left: 4),
-                              padding: EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                  border: Border.all(),
-                                  borderRadius: BorderRadius.circular(4)),
-                            ),
-                            Container(
-                              child: Icon(Icons.g_translate),
-                              margin: EdgeInsets.only(left: 4),
-                              padding: EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                  border: Border.all(),
-                                  borderRadius: BorderRadius.circular(4)),
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                    SizedBox(
-                      height: 18,
-                    ),
-                  ],
-                ),
-              ),
-              // Spacer(),
-              Container(
-                padding: EdgeInsets.all(12),
-                color: Colors.white,
-                child: InkWell(
-                  onTap: () {},
-                  child: Text(
-                    'Ada masalah login?',
-                    style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.w500),
-                  ),
-                ),
-                width: double.maxFinite,
-              )
-            ],
+            children: bottomStatic(),
           ),
         );
       } else {
@@ -285,151 +351,7 @@ class _LoginFormState extends State<LoginForm> {
           // color: Colors.blue,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Container(),
-              Container(),
-              Container(
-                padding: EdgeInsets.only(top: 8, left: 18, right: 18),
-                child: Column(
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: TextFormField(
-                            controller: email,
-                            focusNode: fsEmail,
-                            textInputAction: TextInputAction.next,
-                            // onSubmitted: ,
-                            onFieldSubmitted: (val) {
-                              fsEmail.unfocus();
-                              FocusScope.of(context).requestFocus(fsPassword);
-                            },
-                            decoration:
-                                InputDecoration(labelText: 'Username/Email'),
-
-                            // decoration:,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: TextFormField(
-                            controller: password,
-                            focusNode: fsPassword,
-                            obscureText: true,
-                            decoration: InputDecoration(labelText: 'Password'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Checkbox(
-                            value: true,
-                            onChanged: (val) {
-                              setState(() {});
-                            }),
-                        Text('Tetap login di perangkat ini'),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        MaterialButton(
-                          onPressed: () {},
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.only(left: 14.0, right: 14),
-                            child: Text(' Masuk '),
-                          ),
-                          textColor: Colors.white,
-                          color: Theme.of(context).accentColor,
-                        ),
-                        Text('atau'),
-                        Text(
-                          'Daftar menggunakan email',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color:
-                                Theme.of(context).brightness == Brightness.light
-                                    ? Theme.of(context).primaryColor
-                                    : Colors.orange,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text('Atau gunakan SNS'),
-                        Row(
-                          children: <Widget>[
-                            Container(
-                              child: Icon(
-                                Icons.g_translate,
-                                size: 18,
-                              ),
-                              margin: EdgeInsets.only(left: 4),
-                              padding: EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                  border: Border.all(),
-                                  borderRadius: BorderRadius.circular(18)),
-                            ),
-                            Container(
-                              child: Icon(
-                                Icons.g_translate,
-                                size: 18,
-                              ),
-                              margin: EdgeInsets.only(left: 4),
-                              padding: EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                  border: Border.all(),
-                                  borderRadius: BorderRadius.circular(18)),
-                            ),
-                            Container(
-                              child: Icon(
-                                Icons.g_translate,
-                                size: 18,
-                              ),
-                              margin: EdgeInsets.only(left: 4),
-                              padding: EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                  border: Border.all(),
-                                  borderRadius: BorderRadius.circular(18)),
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                    SizedBox(
-                      height: 8,
-                    ),
-                  ],
-                ),
-              ),
-              // Spacer(),
-              Container(
-                padding: EdgeInsets.all(12),
-                color: Colors.white,
-                child: Text(
-                  'Ada masalah login?',
-                  style: TextStyle(
-                      color: Theme.of(context).brightness == Brightness.light
-                          ? Theme.of(context).primaryColor
-                          : Colors.orange,
-                      fontWeight: FontWeight.w500),
-                ),
-                width: double.maxFinite,
-              )
-            ],
+            children: bottomStatic(),
           ),
         );
       }
