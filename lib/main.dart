@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:dynamic_theme/dynamic_theme.dart';
 import 'loginui.dart';
 
 void main() => runApp(MyApp());
@@ -8,16 +7,6 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    // return DynamicTheme(
-    //   defaultBrightness: Brightness.dark,
-    //   data: (brightness) => ThemeData(
-    //     primarySwatch: Colors.indigo,
-    //     // accentColor: Colors.orange,
-    //     // accentColorBrightness: brightness,
-    //     // buttonColor: Colors.indigo,
-    //     brightness: brightness,
-    //   ),
-    //   themedWidgetBuilder: (context, theme) {
     return MaterialApp(
         theme: ThemeData(
           brightness: Brightness.light,
@@ -56,10 +45,6 @@ class _MyHomePageState extends State<MyHomePage> {
   void _incrementCounter() {
     setState(() {
       _counter++;
-      // DynamicTheme.of(context).setBrightness(
-      //     Theme.of(context).brightness == Brightness.dark
-      //         ? Brightness.light
-      //         : Brightness.dark);
     });
   }
 
@@ -92,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: _incrementCounter,
         tooltip: 'Increment',
         child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
