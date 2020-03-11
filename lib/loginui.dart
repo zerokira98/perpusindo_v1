@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'dart:ui';
-
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:sensors/sensors.dart';
+import 'package:provider/provider.dart';
+import 'authstate.dart';
+// import 'package:permission_handler/permission_handler.dart';
 // import 'math';
 
 class LoginForm extends StatefulWidget {
@@ -31,8 +35,6 @@ class _LoginFormState extends State<LoginForm>
   // Alignment alib = Alignment(0, 0);
   @override
   void initState() {
-    // TODO: implement initState
-
     anicont =
         AnimationController(vsync: this, duration: Duration(milliseconds: 750));
     myanimation = Tween(begin: 0.0, end: 1.0).animate(anicont);
@@ -50,7 +52,6 @@ class _LoginFormState extends State<LoginForm>
 
   @override
   void dispose() {
-    // TODO: implement dispose
     anicont.dispose();
     accel.cancel();
     timer.cancel();
@@ -58,14 +59,49 @@ class _LoginFormState extends State<LoginForm>
   }
 
   setHorizontal(AccelerometerEvent event) {
+    // Future.delayed(Duration(milliseconds: 20), () {
     setState(() {
-      horizontal = event.x / 65;
-      ali = Alignment.lerp(ali, Alignment(0.5 - horizontal, 0), 0.12);
+      horizontal = event.x / 20;
+      ali = Alignment.lerp(ali, Alignment(0.5 - horizontal, 0), 0.1);
     });
+    // });
   }
+
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
+    final authp = Provider.of<AuthProvider>(context);
+    void loginCheck(String email, String pass, BuildContext context) async {
+      var jsonData;
+      Map body = {
+        'email': email,
+        'password': pass,
+      };
+      try {
+        var req = await http.post(
+            'http://192.168.1.3/ci_rest/index.php/kontak/ind2',
+            body: body);
+        if (req.statusCode == 200) {
+          jsonData = json.decode(req.body);
+          authp.signInWithEmail(jsonData);
+        } else if (req.statusCode == 204) {
+          Scaffold.of(context).showSnackBar(SnackBar(
+            content: Text('failure : ' + "Incorrect password/email"),
+            duration: Duration(seconds: 5),
+          ));
+        }
+      } catch (e) {
+        // print(e);
+        Scaffold.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(
+            content: Text('Failure : ' + e.toString()),
+            duration: Duration(seconds: 5),
+          ));
+      }
+    }
+
     Widget head(bool landscape) {
       bool lands = landscape;
       return Container(
@@ -147,168 +183,194 @@ class _LoginFormState extends State<LoginForm>
         Container(),
         Container(
           padding: EdgeInsets.only(top: 8, left: 18, right: 18),
-          child: Column(
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: TextFormField(
-                      controller: email,
-                      focusNode: fsEmail,
-                      textInputAction: TextInputAction.next,
-                      // onSubmitted: ,
-                      onFieldSubmitted: (val) {
-                        fsEmail.unfocus();
-                        FocusScope.of(context).requestFocus(fsPassword);
-                      },
-                      decoration: InputDecoration(labelText: 'Username/Email'),
-
-                      // decoration:,
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: TextFormField(
-                      controller: password,
-                      focusNode: fsPassword,
-                      obscureText: securetext,
-                      decoration: InputDecoration(
-                          labelText: 'Password',
-                          suffixIcon: InkWell(
-                            onTap: () {
-                              setState(() {
-                                securetext = !securetext;
-                              });
-                            },
-                            child: Icon(securetext
-                                ? Icons.visibility_off
-                                : Icons.visibility),
-                          )),
-                    ),
-                  ),
-                ],
-              ),
-              InkWell(
-                onTap: () {
-                  setState(() {
-                    check = !check;
-                  });
-                },
-                child: Row(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: <Widget>[
+                Row(
                   children: <Widget>[
-                    Checkbox(
-                        // checkColor: ,
-                        value: check,
-                        onChanged: (val) {
-                          setState(() {
-                            check = val;
-                          });
-                        }),
-                    Text('Tetap login di perangkat ini'),
+                    Expanded(
+                      child: TextFormField(
+                        controller: email,
+                        focusNode: fsEmail,
+                        textInputAction: TextInputAction.next,
+                        // onSubmitted: ,
+                        validator: (val) {
+                          return val.isEmpty ? "can't be empty" : null;
+                        },
+                        onFieldSubmitted: (val) {
+                          fsEmail.unfocus();
+                          FocusScope.of(context).requestFocus(fsPassword);
+                        },
+                        decoration:
+                            InputDecoration(labelText: 'Username/Email'),
+
+                        // decoration:,
+                      ),
+                    ),
                   ],
                 ),
-              ),
-              SizedBox(
-                height: 8,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Expanded(
-                    flex: 3,
-                    child: MaterialButton(
-                      onPressed: () {
-                        setState(() {
-                          tapped = !tapped;
-                          if (tapped) {
-                            loading = 50;
-                            Future.delayed(Duration(seconds: 5), () {
-                              setState(() {
-                                ready = !ready;
-                                anicont.forward();
-                              });
-                            });
-                          } else {
-                            loading = 0;
-                            setState(() {
-                              ready = !ready;
-                              anicont.reverse();
-                            });
-                          }
-                        });
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 2.0, right: 2),
-                        child: Text(' Masuk '),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: TextFormField(
+                        controller: password,
+                        focusNode: fsPassword,
+                        obscureText: securetext,
+                        validator: (val) {
+                          return val.isEmpty ? "can't be empty" : null;
+                        },
+                        decoration: InputDecoration(
+                            labelText: 'Password',
+                            suffixIcon: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  securetext = !securetext;
+                                });
+                              },
+                              child: Icon(securetext
+                                  ? Icons.visibility_off
+                                  : Icons.visibility),
+                            )),
                       ),
-                      textColor: Colors.white,
-                      color: Theme.of(context).primaryColor,
                     ),
+                  ],
+                ),
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      check = !check;
+                    });
+                  },
+                  child: Row(
+                    children: <Widget>[
+                      Checkbox(
+                          // checkColor: ,
+                          value: check,
+                          onChanged: (val) {
+                            setState(() {
+                              check = val;
+                            });
+                          }),
+                      Text('Tetap login di perangkat ini'),
+                    ],
                   ),
-                  Expanded(flex: 2, child: Center(child: Text('atau'))),
-                  Expanded(
-                    flex: 3,
-                    child: InkWell(
-                      onTap: () {},
-                      child: Text(
-                        'Daftar menggunakan email',
-                        textAlign: TextAlign.end,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
+                ),
+                SizedBox(
+                  height: 8,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Expanded(
+                      flex: 3,
+                      child: Builder(
+                        builder: (context) => MaterialButton(
+                          onPressed: () {
+                            // if (email.text == "" && password.text == "") {}
+                            _formKey.currentState.validate();
+                            loginCheck(email.text, password.text, context);
+                            setState(() {
+                              tapped = !tapped;
+                              if (tapped) {
+                                loading = 50;
+                                Future.delayed(Duration(seconds: 5), () {
+                                  setState(() {
+                                    ready = !ready;
+                                    anicont.forward();
+                                  });
+                                });
+                              } else {
+                                loading = 0;
+                                setState(() {
+                                  ready = !ready;
+                                  anicont.reverse();
+                                });
+                              }
+                            });
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 2.0, right: 2),
+                            child: Text(' Masuk '),
+                          ),
+                          textColor: Colors.white,
                           color: Theme.of(context).primaryColor,
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: 8,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Text('Atau gunakan SNS'),
-                  Row(
-                    children: <Widget>[
-                      InkWell(
+                    Expanded(flex: 2, child: Center(child: Text('atau'))),
+                    Expanded(
+                      flex: 3,
+                      child: InkWell(
                         onTap: () {},
-                        child: Container(
-                          child: Icon(Icons.g_translate),
-                          margin: EdgeInsets.only(left: 4),
-                          padding: EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                              border: Border.all(),
-                              borderRadius: BorderRadius.circular(4)),
+                        child: Text(
+                          'Daftar menggunakan email',
+                          textAlign: TextAlign.end,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).primaryColor,
+                          ),
                         ),
                       ),
-                      Container(
-                        child: Icon(Icons.g_translate),
-                        margin: EdgeInsets.only(left: 4),
-                        padding: EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                            border: Border.all(),
-                            borderRadius: BorderRadius.circular(4)),
-                      ),
-                      Container(
-                        child: Icon(Icons.g_translate),
-                        margin: EdgeInsets.only(left: 4),
-                        padding: EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                            border: Border.all(),
-                            borderRadius: BorderRadius.circular(4)),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-              SizedBox(
-                height: 18,
-              ),
-            ],
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 8,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text('Atau gunakan SNS'),
+                    Row(
+                      children: <Widget>[
+                        InkWell(
+                          onTap: () {},
+                          child: Container(
+                            child: Icon(Icons.g_translate),
+                            margin: EdgeInsets.only(left: 4),
+                            padding: EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                                border: Border.all(),
+                                borderRadius: BorderRadius.circular(4)),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            authp.signInWithFacebook();
+                          },
+                          child: Container(
+                            child: Icon(Icons.g_translate),
+                            margin: EdgeInsets.only(left: 4),
+                            padding: EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                                border: Border.all(),
+                                borderRadius: BorderRadius.circular(4)),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            authp.signInWithGoogle();
+                          },
+                          child: Container(
+                            child:
+                                ImageIcon(AssetImage('images/icon/google.png')),
+                            margin: EdgeInsets.only(left: 4),
+                            padding: EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                                border: Border.all(),
+                                borderRadius: BorderRadius.circular(4)),
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+                SizedBox(
+                  height: 18,
+                ),
+              ],
+            ),
           ),
         ),
         // Spacer(),
@@ -333,8 +395,6 @@ class _LoginFormState extends State<LoginForm>
 
     Widget bottom(int orients) {
       int orient = orients;
-
-      Widget statis = Container();
 
       if (orient == 0) {
         return Container(
