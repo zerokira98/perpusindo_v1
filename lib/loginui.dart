@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'dart:ui';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:sensors/sensors.dart';
 import 'package:provider/provider.dart';
@@ -72,35 +70,7 @@ class _LoginFormState extends State<LoginForm>
   @override
   Widget build(BuildContext context) {
     final authp = Provider.of<AuthProvider>(context);
-    void loginCheck(String email, String pass, BuildContext context) async {
-      var jsonData;
-      Map body = {
-        'email': email,
-        'password': pass,
-      };
-      try {
-        var req = await http.post(
-            'http://192.168.1.3/ci_rest/index.php/kontak/ind2',
-            body: body);
-        if (req.statusCode == 200) {
-          jsonData = json.decode(req.body);
-          authp.signInWithEmail(jsonData);
-        } else if (req.statusCode == 204) {
-          Scaffold.of(context).showSnackBar(SnackBar(
-            content: Text('failure : ' + "Incorrect password/email"),
-            duration: Duration(seconds: 5),
-          ));
-        }
-      } catch (e) {
-        // print(e);
-        Scaffold.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(
-            content: Text('Failure : ' + e.toString()),
-            duration: Duration(seconds: 5),
-          ));
-      }
-    }
+    
 
     Widget head(bool landscape) {
       bool lands = landscape;
@@ -269,7 +239,7 @@ class _LoginFormState extends State<LoginForm>
                           onPressed: () {
                             // if (email.text == "" && password.text == "") {}
                             _formKey.currentState.validate();
-                            loginCheck(email.text, password.text, context);
+                            authp.loginCheck(email.text, password.text, context);
                             setState(() {
                               tapped = !tapped;
                               if (tapped) {

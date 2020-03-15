@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
         appBarTheme: AppBarTheme(
             brightness: Brightness.dark,
             color: Color.fromRGBO(12, 12, 12, 1.0),
-            textTheme: TextTheme(headline6: TextStyle(color: Colors.white))),
+            textTheme: TextTheme(title: TextStyle(color: Colors.white))),
       ),
       title: 'Flutter Demo',
       home: TestAProvider(),

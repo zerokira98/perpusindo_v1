@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'user_model.dart';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 enum AuthState { Initialize, Authenticated, Authenticating, Unauthenticated }
 
@@ -29,6 +30,17 @@ class AuthProvider with ChangeNotifier {
     final result = await facebookLogin.logIn(['email']);
     switch (result.status) {
       case FacebookLoginStatus.loggedIn:
+      var accessToken = result.accessToken;
+      var graphResponse = await http.get(
+            'https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${accessToken.token}');
+      var profile = json.decode(graphResponse.body);
+       userdata = LoggedUser(
+          displayName: profile.name,
+          email: profile.email,
+          id: profile.id,
+          photoProfile: "",
+          token: accessToken.token,
+        );
         signIn();
         break;
       case FacebookLoginStatus.cancelledByUser:
@@ -54,7 +66,35 @@ class AuthProvider with ChangeNotifier {
     signIn();
     return 'signInWithGoogle succeeded: ';
   }
-
+void loginCheck(String email, String pass, BuildContext context) async {
+      var jsonData;
+      Map body = {
+        'email': email,
+        'password': pass,
+      };
+      try {
+        var req = await http.post(
+            'http://192.168.1.3/ci_rest/index.php/kontak/ind2',
+            body: body);
+        if (req.statusCode == 200) {
+          jsonData = json.decode(req.body);
+          signInWithEmail(jsonData);
+        } else if (req.statusCode == 204) {
+          Scaffold.of(context).showSnackBar(SnackBar(
+            content: Text('failure : ' + "Incorrect password/email"),
+            duration: Duration(seconds: 5),
+          ));
+        }
+      } catch (e) {
+        // print(e);
+        Scaffold.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(
+            content: Text('Failure : ' + e.toString()),
+            duration: Duration(seconds: 5),
+          ));
+      }
+    }
   void signInWithEmail(jsonData) {
     authState = AuthState.Authenticating;
     print(jsonData[0]['email']);
@@ -93,6 +133,7 @@ class AuthProvider with ChangeNotifier {
 
   void signOut() async {
     await googleSignIn.signOut();
+    await facebookLogin.logOut();
     SharedPreferences shp = await SharedPreferences.getInstance();
     shp.remove('LoginUser');
     authState = AuthState.Unauthenticated;
