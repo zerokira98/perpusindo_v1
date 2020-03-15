@@ -34,11 +34,14 @@ class AuthProvider with ChangeNotifier {
       var graphResponse = await http.get(
             'https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${accessToken.token}');
       var profile = json.decode(graphResponse.body);
+      print(profile);
+      var proid = profile["id"];
+      print(accessToken.token);
        userdata = LoggedUser(
-          displayName: profile.name,
-          email: profile.email,
-          id: profile.id,
-          photoProfile: "",
+          displayName: profile['name'],
+          email: profile['email'],
+          id: profile['id'],
+          photoProfile: "https://graph.facebook.com/v6.0/$proid/picture?type=large",
           token: accessToken.token,
         );
         signIn();
@@ -55,7 +58,6 @@ class AuthProvider with ChangeNotifier {
   Future<String> signInWithGoogle() async {
     authState = AuthState.Authenticating;
     final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
-
     userdata = LoggedUser(
       displayName: googleSignInAccount.displayName,
       email: googleSignInAccount.email,
