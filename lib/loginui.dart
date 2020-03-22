@@ -30,7 +30,6 @@ class _LoginFormState extends State<LoginForm>
   bool tapped = false;
   bool ready = false;
   Alignment ali = Alignment(-0.1, 0);
-  // Alignment alib = Alignment(0, 0);
   @override
   void initState() {
     anicont =
@@ -43,7 +42,6 @@ class _LoginFormState extends State<LoginForm>
     });
     timer = Timer.periodic(Duration(milliseconds: 30), (_) {
       setHorizontal(event);
-      // print(event);
     });
     super.initState();
   }
@@ -57,12 +55,10 @@ class _LoginFormState extends State<LoginForm>
   }
 
   setHorizontal(AccelerometerEvent event) {
-    // Future.delayed(Duration(milliseconds: 20), () {
     setState(() {
       horizontal = event.x / 20;
       ali = Alignment.lerp(ali, Alignment(0.5 - horizontal, 0), 0.1);
     });
-    // });
   }
 
   final _formKey = GlobalKey<FormState>();
@@ -70,7 +66,6 @@ class _LoginFormState extends State<LoginForm>
   @override
   Widget build(BuildContext context) {
     final authp = Provider.of<AuthProvider>(context);
-    
 
     Widget head(bool landscape) {
       bool lands = landscape;
@@ -164,7 +159,6 @@ class _LoginFormState extends State<LoginForm>
                         controller: email,
                         focusNode: fsEmail,
                         textInputAction: TextInputAction.next,
-                        // onSubmitted: ,
                         validator: (val) {
                           return val.isEmpty ? "can't be empty" : null;
                         },
@@ -174,8 +168,6 @@ class _LoginFormState extends State<LoginForm>
                         },
                         decoration:
                             InputDecoration(labelText: 'Username/Email'),
-
-                        // decoration:,
                       ),
                     ),
                   ],
@@ -239,7 +231,8 @@ class _LoginFormState extends State<LoginForm>
                           onPressed: () {
                             // if (email.text == "" && password.text == "") {}
                             _formKey.currentState.validate();
-                            authp.loginCheck(email.text, password.text, context);
+                            authp.loginCheck(
+                                email.text, password.text, context);
                             setState(() {
                               tapped = !tapped;
                               if (tapped) {
@@ -297,7 +290,8 @@ class _LoginFormState extends State<LoginForm>
                         InkWell(
                           onTap: () {},
                           child: Container(
-                            child: Icon(Icons.g_translate),
+                            child: ImageIcon(
+                                AssetImage('images/icon/twitter.png')),
                             margin: EdgeInsets.only(left: 4),
                             padding: EdgeInsets.all(2),
                             decoration: BoxDecoration(
@@ -310,7 +304,8 @@ class _LoginFormState extends State<LoginForm>
                             authp.signInWithFacebook();
                           },
                           child: Container(
-                            child: Icon(Icons.g_translate),
+                            child: ImageIcon(
+                                AssetImage('images/icon/facebook.png')),
                             margin: EdgeInsets.only(left: 4),
                             padding: EdgeInsets.all(2),
                             decoration: BoxDecoration(

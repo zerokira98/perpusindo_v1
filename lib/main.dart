@@ -70,7 +70,12 @@ class TestAProvider extends StatelessWidget {
                 case AuthState.Unauthenticated:
                   return LoginForm();
                 case AuthState.Authenticating:
-                  return Splash('Authenticating');
+                  showDialog(
+                      context: context,
+                      child: AlertDialog(
+                        content: CircularProgressIndicator(),
+                      ));
+                // return Splash('Authenticating');
               }
             },
           )),
