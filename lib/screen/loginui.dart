@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:sensors/sensors.dart';
 import 'package:provider/provider.dart';
-import 'authstate.dart';
+import 'package:perpusindo_v1/bloc/authstate.dart';
 // import 'package:permission_handler/permission_handler.dart';
 // import 'math';
 
@@ -110,33 +110,34 @@ class _LoginFormState extends State<LoginForm>
             AnimatedPositioned(
                 duration: Duration(milliseconds: 245),
                 bottom: 16,
-                right: 14 + loading, //14
+                right: 14,
+                // + loading, //14
                 child: Image.asset(
                   'images/pilogo.png',
                   height: 45,
                   color: Colors.white,
                 )),
-            AnimatedPositioned(
-              duration: Duration(milliseconds: 300),
-              bottom: 16,
-              right: 14 - 70 + loading,
-              child: Container(
-                height: 45,
-                padding:
-                    EdgeInsets.only(top: 6, bottom: 6, left: 12, right: 16),
-                color: Colors.white,
-                child: AnimatedSwitcher(
-                  duration: Duration(milliseconds: 200),
-                  child: !ready
-                      ? CircularProgressIndicator()
-                      : AnimatedIcon(
-                          icon: AnimatedIcons.pause_play,
-                          color: Colors.green,
-                          size: 28,
-                          progress: myanimation),
-                ),
-              ),
-            ),
+            // AnimatedPositioned(
+            //   duration: Duration(milliseconds: 300),
+            //   bottom: 16,
+            //   right: 14 - 70 + loading,
+            //   child: Container(
+            //     height: 45,
+            //     padding:
+            //         EdgeInsets.only(top: 6, bottom: 6, left: 12, right: 16),
+            //     color: Colors.white,
+            //     child: AnimatedSwitcher(
+            //       duration: Duration(milliseconds: 200),
+            //       child: !ready
+            //           ? CircularProgressIndicator()
+            //           : AnimatedIcon(
+            //               icon: AnimatedIcons.pause_play,
+            //               color: Colors.green,
+            //               size: 28,
+            //               progress: myanimation),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       );
@@ -233,24 +234,24 @@ class _LoginFormState extends State<LoginForm>
                             _formKey.currentState.validate();
                             authp.loginCheck(
                                 email.text, password.text, context);
-                            setState(() {
-                              tapped = !tapped;
-                              if (tapped) {
-                                loading = 50;
-                                Future.delayed(Duration(seconds: 5), () {
-                                  setState(() {
-                                    ready = !ready;
-                                    anicont.forward();
-                                  });
-                                });
-                              } else {
-                                loading = 0;
-                                setState(() {
-                                  ready = !ready;
-                                  anicont.reverse();
-                                });
-                              }
-                            });
+                            // setState(() {
+                            //   tapped = !tapped;
+                            //   if (tapped) {
+                            //     loading = 50;
+                            //     Future.delayed(Duration(seconds: 5), () {
+                            //       setState(() {
+                            //         ready = !ready;
+                            //         anicont.forward();
+                            //       });
+                            //     });
+                            //   } else {
+                            //     loading = 0;
+                            //     setState(() {
+                            //       ready = !ready;
+                            //       anicont.reverse();
+                            //     });
+                            //   }
+                            // });
                           },
                           child: Padding(
                             padding: const EdgeInsets.only(left: 2.0, right: 2),

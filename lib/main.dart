@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'loginui.dart';
+import 'package:perpusindo_v1/screen/loginui.dart';
 import 'package:provider/provider.dart';
-import 'authstate.dart';
+import 'package:perpusindo_v1/bloc/authstate.dart';
 
 void main() => runApp(MyApp());
 
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         appBarTheme: AppBarTheme(
             brightness: Brightness.dark,
             color: Color.fromRGBO(12, 12, 12, 1.0),
-            textTheme: TextTheme(title: TextStyle(color: Colors.white))),
+            textTheme: TextTheme(headline6: TextStyle(color: Colors.white))),
       ),
       title: 'Flutter Demo',
       home: TestAProvider(),
@@ -33,7 +33,26 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class TestAProvider extends StatelessWidget {
+class TestAProvider extends StatefulWidget {
+  @override
+  _TestAProviderState createState() => _TestAProviderState();
+}
+
+class _TestAProviderState extends State<TestAProvider> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // init();
+  }
+
+  // init() async {
+  //   WidgetsFlutterBinding.ensureInitialized();
+  //   await FlutterDownloader.initialize(
+  //       debug: true // optional: set false to disable printing logs to console
+  //       );
+  // }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<AuthProvider>(
@@ -58,6 +77,10 @@ class TestAProvider extends StatelessWidget {
                           Text('Email :' + appState.userData.email),
                           Image.network(appState.userData.photoProfile),
                           RaisedButton(
+                            onPressed: () async {},
+                            child: Text('Download Images'),
+                          ),
+                          RaisedButton(
                               onPressed: () {
                                 print('pressed');
                                 appState.signOut();
@@ -75,6 +98,9 @@ class TestAProvider extends StatelessWidget {
                       child: AlertDialog(
                         content: CircularProgressIndicator(),
                       ));
+                  break;
+                default:
+                  return Scaffold();
                 // return Splash('Authenticating');
               }
             },
