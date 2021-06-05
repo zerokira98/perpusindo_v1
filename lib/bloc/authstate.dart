@@ -87,14 +87,14 @@ class AuthProvider with ChangeNotifier {
         jsonData = json.decode(req.body);
         signInWithEmail(jsonData);
       } else if (req.statusCode == 204) {
-        Scaffold.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('failure : ' + "Incorrect password/email"),
           duration: Duration(seconds: 5),
         ));
       }
     } catch (e) {
       // print(e);
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(
           content: Text('Failure : ' + e.toString()),

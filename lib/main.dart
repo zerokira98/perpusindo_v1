@@ -76,11 +76,11 @@ class _TestAProviderState extends State<TestAProvider> {
                           Text('Welcome ' + appState.userData.displayName),
                           Text('Email :' + appState.userData.email),
                           Image.network(appState.userData.photoProfile),
-                          RaisedButton(
+                          ElevatedButton(
                             onPressed: () async {},
                             child: Text('Download Images'),
                           ),
-                          RaisedButton(
+                          ElevatedButton(
                               onPressed: () {
                                 print('pressed');
                                 appState.signOut();
@@ -94,10 +94,13 @@ class _TestAProviderState extends State<TestAProvider> {
                   return LoginForm();
                 case AuthState.Authenticating:
                   showDialog(
-                      context: context,
-                      child: AlertDialog(
+                    builder: (context) {
+                      return AlertDialog(
                         content: CircularProgressIndicator(),
-                      ));
+                      );
+                    },
+                    context: context,
+                  );
                   break;
                 default:
                   return Scaffold();
